@@ -1,0 +1,16 @@
+ROS Publisher and Subscriber Basics
+
+Publisher:
+A node that sends messages to a topic.
+
+Subscriber:
+A node that listens to messages from a topic.
+
+Example Flow:
+Sensor Node → publishes data → /sensor_topic
+Controller Node → subscribes to /sensor_topic → processes data
+
+Common Issues:
+- Topic names mismatch
+- Message type mismatch
+- Node not initialized properly

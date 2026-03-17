@@ -1,0 +1,21 @@
+Stepper Motor Troubleshooting Guide
+
+Common Problems:
+- Motor not rotating
+- Motor vibrating but not moving
+- Overheating
+- Missed steps
+
+Possible Causes:
+- Insufficient current supply
+- Incorrect wiring of coils
+- Wrong step sequence
+- Driver current limit set too low
+- Microstepping configuration mismatch
+
+Solutions:
+- Verify coil pairs using a multimeter
+- Check motor driver current limit
+- Ensure correct step sequence in code
+- Use appropriate power supply voltage
+- Enable microstepping if smoother motion is needed

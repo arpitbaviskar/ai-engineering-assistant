@@ -1,0 +1,18 @@
+L298N Motor Driver Basics
+
+Features:
+- Dual H-Bridge motor driver
+- Can control 2 DC motors or 1 stepper motor
+- Logic voltage: 5V
+- Motor voltage: up to 35V
+
+Common Issues:
+- Motor not spinning
+- Driver overheating
+- Low torque
+
+Troubleshooting:
+- Check ENA / ENB pins for PWM signals
+- Verify power supply for motors
+- Use proper heat sink if current is high
+- Ensure correct wiring of IN1, IN2, IN3, IN4

@@ -1,0 +1,19 @@
+PID Control in Robotics
+
+PID stands for:
+- Proportional
+- Integral
+- Derivative
+
+Purpose:
+Maintain stable control of systems like motors, drones, or robotic arms.
+
+Common Tuning Issues:
+- Overshoot
+- Oscillation
+- Slow response
+
+Basic Tuning Strategy:
+1. Increase P until system responds quickly.
+2. Add D to reduce oscillations.
+3. Add I to remove steady-state error.

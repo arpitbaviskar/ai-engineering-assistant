@@ -1,0 +1,31 @@
+Servo Motor Jitter — Troubleshooting Guide
+
+SYMPTOM: Servo motor jitters or vibrates continuously.
+
+CAUSE 1: Unstable power supply
+The servo requires a stable 5V supply. If powered from the Arduino 5V pin
+along with other components, voltage drops cause jitter. 
+FIX: Use a separate 5V power supply (1A minimum) for servos.
+     Share GND between the Arduino and the power supply.
+
+CAUSE 2: PWM signal noise
+Electrical noise on the signal wire causes the servo to receive corrupted
+position commands.
+FIX: Add a 100-ohm resistor in series on the signal wire.
+     Keep signal wire away from motor power cables.
+     Use a short, shielded signal wire.
+
+CAUSE 3: Servo overload
+Servo stalling under mechanical load causes jitter and heat.
+FIX: Check if servo is sized correctly for the torque required.
+     Use a servo with higher kg/cm rating.
+     Reduce mechanical friction in the joint.
+
+CAUSE 4: Incorrect PWM frequency
+Standard hobby servos expect 50Hz PWM. Wrong frequency causes erratic motion.
+FIX: Set PWM frequency to 50Hz.
+     Pulse width should be between 1000us (0 deg) and 2000us (180 deg).
+
+CAUSE 5: Code sending rapid conflicting commands
+FIX: Add delay between position commands (minimum 20ms per step).
+     Use servo.write() with smooth incremental steps.

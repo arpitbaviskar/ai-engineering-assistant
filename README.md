@@ -1,5 +1,5 @@
 # AI Engineering Assistant
-![AI Engineering Assistant](assets/screenshot1.png)
+![AI Engineering Assistant](assets/Screenshot1.png)
 A Retrieval-Augmented Generation (RAG) system for robotics and embedded systems troubleshooting.
 
 ## Features

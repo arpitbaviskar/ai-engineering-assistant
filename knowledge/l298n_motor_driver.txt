@@ -1,18 +1,212 @@
-L298N Motor Driver Basics
+TOPIC: L298N Motor Driver
+SOURCE: https://lastminuteengineers.com/l298n-dc-stepper-driver-arduino-tutorial/
 
-Features:
-- Dual H-Bridge motor driver
-- Can control 2 DC motors or 1 stepper motor
-- Logic voltage: 5V
-- Motor voltage: up to 35V
+INTERFACE L298N DC MOTOR DRIVER MODULE WITH ARDUINO
 
-Common Issues:
-- Motor not spinning
-- Driver overheating
-- Low torque
+So, you’re planning to build your own two-wheel-drive robot? That’s awesome! At some point, you’ll need to figure out how to control the motors that make it move. The most common type you’ll use is the DC motor. These motors are simple, reliable, and perfect for beginner projects. They don’t need any fancy signals—just apply voltage, and they spin.
 
-Troubleshooting:
-- Check ENA / ENB pins for PWM signals
-- Verify power supply for motors
-- Use proper heat sink if current is high
-- Ensure correct wiring of IN1, IN2, IN3, IN4
+Sounds easy, right? So why not just connect the motors directly to your Arduino? Well, here’s the catch: DC motors need a lot more current than an Arduino can safely provide. If you try to drive a motor directly from an Arduino pin, you’ll risk overloading it—and possibly damaging your Arduino.
+
+That’s where the L298N motor driver module comes in. It acts as a bridge between your low-power Arduino and your high-power motors. You send small control signals from the Arduino, and the L298N safely handles the higher current required by the motor. Everyone’s happy—the motor gets the power it needs, and the Arduino stays safe.
+
+In this tutorial, you’ll learn everything you need to know to hook up an L298N motor driver to your Arduino, control both the speed and direction of two DC motors, and get your robot rolling in no time.
+
+UNDERSTANDING MOTOR CONTROL BASICS
+
+Before learning about the L298N motor driver, it’s important to understand two key concepts:
+
+H-Bridge circuit – allows us to control the direction of the motor’s rotation
+
+PWM (Pulse Width Modulation) – helps control the speed of a DC motor
+
+CONTROLLING DIRECTION WITH AN H-BRIDGE
+
+DC motors are the easiest motors to use! If you connect a battery to a DC motor, it will spin in one direction. If you swap the wires, it spins in the other direction. But you can’t always physically swap the wires every time you want to change direction. That’s where an H-bridge comes in handy!
+
+An H-bridge is a special circuit with four electronic switches arranged in an “H” shape, with the motor in the middle.
+
+By turning these switches on and off in a specific order, you can make electricity flow through the motor in one direction or the opposite direction. This clever trick lets you control which way the motor spins without having to physically reverse any wires.
+
+The animation below shows how an H-bridge works.
+
+CONTROLLING SPEED WITH PWM (PULSE WIDTH MODULATION)
+
+When a fixed voltage is given to a DC motor, it spins at a fixed speed. If you want to change the speed, you need to adjust the voltage. A higher voltage makes the motor spin faster, while a lower voltage makes it slower.
+
+However, physically changing the voltage all the time isn’t very practical. That’s where PWM, or Pulse Width Modulation, comes in.
+
+PWM is a smart way to control the average amount of power sent to the motor. Instead of sending a fixed voltage, PWM rapidly turns the voltage ON and OFF in very quick pulses.
+
+The “width” of each ON pulse, also called the duty cycle, determines how long the voltage is “ON” during each cycle.
+
+If the voltage is ON for most of the time (a wider pulse), the motor receives a higher average voltage and spins faster.
+
+If the voltage is OFF for most of the time (a narrower pulse), the motor receives a lower average voltage and spins slower.
+
+The image below shows how different duty cycles affect motor speed.
+
+L298N MOTOR DRIVER CHIP
+
+At the center of the module is a big, black chip with a chunky heat sink – the L298N.
+
+It is a high-voltage, high-current dual full-bridge driver primarily designed for driving inductive loads such as DC motors, stepper motors, relays, and solenoids. It works as a current amplifier, meaning it takes the low-current control signals from an Arduino and boosts them to the higher current and voltage levels that motors need to operate.
+
+At its core, the L298N has two separate H-bridge circuits. Remember how an H-bridge helps control the direction of a DC motor? Well, since the L298N has two of them, it can control two different DC motors at the same time. You can even combine these two H-bridges to control a bipolar stepper motor.
+
+The L298N is pretty flexible when it comes to power. It can work with a wide range of voltages, from 5V up to 46V, and can supply up to 2A of continuous current per channel, which means it can handle everything from small hobby motors to larger, more powerful ones.
+
+The L298N also includes built-in thermal protection. This means that if the chip gets too hot — maybe because a motor is drawing too much current or the chip isn’t cooled well — the L298N will automatically shut down its outputs temporarily to prevent damage. Once the chip cools down to a safe temperature, it automatically starts working again.
+
+TECHNICAL SPECIFICATIONS
+
+Here are the specifications:
+
+For more details, please refer below datasheet.
+
+L298N MOTOR DRIVER MODULE PINOUT
+
+The L298N module has 11 pins in total.
+
+Let’s go over each group of pins to understand what they do and how to use them properly.
+
+There are two power input pins on the L298N module: VS and VSS.
+
+VS is the main power input for the motors. On many modules, this pin is labeled as +12V, but it can actually handle a wide range of DC voltages, from 5V up to 46V. However, it’s important to understand that the voltage your motors actually receive will be a bit lower than what you supply to the VS pin. This is because the internal H-Bridge transistors inside the L298N cause a voltage drop of about 2V. More details about this voltage drop and how much voltage you should supply to make sure your motors run at full speed are explained in this section .
+
+VSS is the power input for the internal logic circuitry of the chip. This logic circuitry needs a steady 5V to operate. You can supply this 5V in one of two ways. One option is to connect an external 5V power supply directly to the VSS pin. The other option is to use the onboard 5V voltage regulator, which takes power from the motor supply (VS) and automatically provides 5V to the logic circuits. When you use the onboard regulator, you don’t need to connect anything to the VSS pin yourself. The details on how to use this regulator and when to connect VSS directly are explained in this section .
+
+GND pin is the common ground connection for the module. Both the motor power supply and your Arduino must share a common ground through this pin.
+
+These are the pins where you actually connect your DC motors.
+
+The OUT1 and OUT2 pins connect to your first motor (motor A), while the OUT3 and OUT4 pins connect to your second motor (motor B). You can connect any DC motor that runs on 5 to 46 volts to these pins.
+
+DIRECTION CONTROL PINS
+
+These pins control the spinning direction of the motors by turning the internal H-Bridge switches on and off:
+
+The chip has two direction control pins for each motor. The IN1 and IN2 pins control the spinning direction of motor A, while the IN3 and IN4 pins control the spinning direction of motor B.
+
+By setting different combinations of HIGH or LOW signals on these pins, you can make the motors spin forward, backward, or stop. The chart below shows exactly how this works:
+
+The ENA and ENB pins control how fast your motors spin.
+
+Actually, these pins work as simple on/off switches. When you pull one of them HIGH, the corresponding motor is enabled and spins at full speed. When you pull it LOW, the motor is completely disabled and won’t spin at all.
+
+But these pins can do more than just switch the motors on or off. By sending a PWM (Pulse Width Modulation) signal to ENA or ENB, you can actually control the speed of each motor.
+
+PWM works by turning the motor on and off very quickly—many times per second. The speed depends on how long the motor stays on during each cycle (called the duty cycle). If the signal stays on for most of the time, the motor spins faster. If it’s on for only a short time, the motor spins slower.
+
+The L298N module usually comes with jumpers placed across the ENA and ENB pins, which connects them directly to 5V. This makes the motors spin at full speed by default. If you want to control the speed of your motors through your Arduino, you’ll need to remove these jumpers and connect ENA and ENB pins to the PWM-enabled pins on your Arduino.
+
+VOLTAGE DROP OF L298N
+
+You might know that when a transistor is turned “on” or in a “saturated” state, allowing current to flow through it, there’s always a small amount of voltage that gets lost across it. The L298N uses bipolar junction transistors (BJTs) inside its H-Bridge circuit, which are known to have noticeable voltage drops when carrying current.
+
+According to the datasheet, the voltage drop across the L298N can range from about 1.8V to 3.2V when the current is around 1 amp, and it can go as high as almost 5V when the current reaches 2 amps.
+
+So, as a general rule, you can assume a voltage drop of about 2V in typical use.
+
+What this voltage drop means for your motors is that if you supply 12V to the motor power input (VS), your motors will only receive approximately 10V of power. This is why your 12V DC motors may not run at full speed when powered through the L298N with exactly 12V.
+
+To make sure your motor runs at its maximum speed, you should provide a voltage to the motor power supply that is about 2V higher than the actual voltage your motor needs. For instance, if you are using a 5V motor, you’ll need to supply around 7V to the motor power terminal. Similarly, if you have 12V motors, your motor power supply voltage should be about 14V to help them reach their full speed.
+
+ON-BOARD 5V REGULATOR AND JUMPER
+
+The L298N motor driver module comes with a built-in 78M05 voltage regulator. The purpose of this regulator is to take power from the motor supply input (connected to the VS pin) and convert it into a steady 5V. This 5V is then used to power the internal logic circuitry of the L298N chip, which means you don’t need to connect a separate 5V power source to the VSS pin.
+
+There is a small jumper on the module that lets you enable or disable this regulator.
+
+When the jumper is in place , the 5V regulator is enabled. In this mode, the 5V regulator automatically powers the chip’s internal logic circuitry using the motor power input, and the VSS pin becomes a 5V output. This output can provide up to 0.5 amps of current, which is often enough to power an Arduino or other small electronic components.
+
+However, it’s important to note that the onboard 5V regulator is not designed to handle input voltages higher than 12V. So, you should only use this feature if your motor power supply is less than 12V. If your motor power supply is higher than 12V, you must remove the jumper to prevent damage to the onboard 5V regulator.
+
+Here’s a circuit diagram that will help you understand how power flows when the regulator jumper is in place.
+
+When the jumper is removed , the 5V regulator is disabled, and now the VSS pin becomes a required input. That means you must provide 5V from an external power source to power the internal logic circuitry of the chip.
+
+WIRING AN L298N MOTOR DRIVER MODULE TO AN ARDUINO
+
+Now that we know how the L298N module works, we can start connecting it to our Arduino!
+
+We’ll begin by connecting power to the motors. In this experiment, we’re using TT motors which are commonly used in two-wheel drive robots. These motors usually work well with voltages between 3V and 6V. Because the L298N module causes a voltage drop of about 2V, we’ll connect an external 7V power source to the VS terminal. This way, our motors will receive the ideal 5V they need.
+
+Next, we need to provide 5V power to the L298N’s internal logic circuitry. Instead of using a separate power source for this, we’ll take advantage of the built-in 5V regulator on the module. To do that, just leave the jumper for the 5V regulator in place. This way, the module will take 5V from the motor power supply.
+
+Now let’s connect the control pins. The L298N module has four input pins—IN1, IN2, IN3, and IN4—that are used to control the direction of the motors. We’ll connect them to digital output pins 8, 7, 5, and 4 on the Arduino.
+
+To control how fast the motors spin, we’ll use PWM (Pulse Width Modulation). For that, we need to remove the small jumpers that are on ENA and ENB, and instead connect them to Arduino’s PWM-enabled pins 9 and 3.
+
+Lastly, connect the motors to the output terminals on the L298N module. One motor goes to terminal A, which is OUT1 and OUT2. The other motor connects to terminal B, which is OUT3 and OUT4. Don’t worry too much about which motor wire goes to which output pin—if your motor spins in the wrong direction, you can simply swap the wires later, as there’s no “right” or “wrong” way to connect them.
+
+Here’s a quick reference table for the pin connections:
+
+The image below shows the complete wiring diagram for this setup.
+
+ARDUINO EXAMPLE CODE
+
+Here’s a simple Arduino sketch that shows how to control the direction and speed of two DC motors using the L298N motor driver and an Arduino. You don’t need any special libraries for this sketch; it uses only the basic built-in functions of the Arduino IDE.
+
+This example is a great way to get hands-on experience with using the L298N to control both speed and direction of motors. Once you understand this, you can easily build more complex motor control systems, like those used in basic robots or remote-controlled cars.
+
+// Motor A connections int enA = 9 ; int in1 = 8 ; int in2 = 7 ; // Motor B connections int enB = 3 ; int in3 = 5 ; int in4 = 4 ; void setup () { // Set all the motor control pins to outputs pinMode (enA, OUTPUT); pinMode (enB, OUTPUT); pinMode (in1, OUTPUT); pinMode (in2, OUTPUT); pinMode (in3, OUTPUT); pinMode (in4, OUTPUT); // Turn off motors - Initial state digitalWrite (in1, LOW); digitalWrite (in2, LOW); digitalWrite (in3, LOW); digitalWrite (in4, LOW);
+} void loop () { directionControl (); delay ( 1000 ); speedControl (); delay ( 1000 );
+} // This function lets you control spinning direction of motors void directionControl () { // Set motors to maximum speed digitalWrite (enA, HIGH); digitalWrite (enB, HIGH); // Turn on motor A & B digitalWrite (in1, HIGH); digitalWrite (in2, LOW); digitalWrite (in3, HIGH); digitalWrite (in4, LOW); delay ( 2000 ); // Now change motor directions digitalWrite (in1, LOW); digitalWrite (in2, HIGH); digitalWrite (in3, LOW); digitalWrite (in4, HIGH); delay ( 2000 ); // Turn off motors digitalWrite (in1, LOW); digitalWrite (in2, LOW); digitalWrite (in3, LOW); digitalWrite (in4, LOW);
+} // This function lets you control speed of the motors void speedControl () { // Turn on motors digitalWrite (in1, LOW); digitalWrite (in2, HIGH); digitalWrite (in3, LOW); digitalWrite (in4, HIGH); // Accelerate from zero to maximum speed for ( int i = 0 ; i < 256 ; i++) { analogWrite (enA, i); analogWrite (enB, i); delay ( 20 );
+} // Decelerate from maximum speed to zero for ( int i = 255 ; i >= 0 ; --i) { analogWrite (enA, i); analogWrite (enB, i); delay ( 20 );
+} // Now turn off motors digitalWrite (in1, LOW); digitalWrite (in2, LOW); digitalWrite (in3, LOW); digitalWrite (in4, LOW);
+}
+
+// Motor A connections int enA = 9 ; int in1 = 8 ; int in2 = 7 ; // Motor B connections int enB = 3 ; int in3 = 5 ; int in4 = 4 ; void setup () { // Set all the motor control pins to outputs pinMode (enA, OUTPUT); pinMode (enB, OUTPUT); pinMode (in1, OUTPUT); pinMode (in2, OUTPUT); pinMode (in3, OUTPUT); pinMode (in4, OUTPUT); // Turn off motors - Initial state digitalWrite (in1, LOW); digitalWrite (in2, LOW); digitalWrite (in3, LOW); digitalWrite (in4, LOW);
+} void loop () { directionControl (); delay ( 1000 ); speedControl (); delay ( 1000 );
+} // This function lets you control spinning direction of motors void directionControl () { // Set motors to maximum speed digitalWrite (enA, HIGH); digitalWrite (enB, HIGH); // Turn on motor A & B digitalWrite (in1, HIGH); digitalWrite (in2, LOW); digitalWrite (in3, HIGH); digitalWrite (in4, LOW); delay ( 2000 ); // Now change motor directions digitalWrite (in1, LOW); digitalWrite (in2, HIGH); digitalWrite (in3, LOW); digitalWrite (in4, HIGH); delay ( 2000 ); // Turn off motors digitalWrite (in1, LOW); digitalWrite (in2, LOW); digitalWrite (in3, LOW); digitalWrite (in4, LOW);
+} // This function lets you control speed of the motors void speedControl () { // Turn on motors digitalWrite (in1, LOW); digitalWrite (in2, HIGH); digitalWrite (in3, LOW); digitalWrite (in4, HIGH); // Accelerate from zero to maximum speed for ( int i = 0 ; i < 256 ; i++) { analogWrite (enA, i); analogWrite (enB, i); delay ( 20 );
+} // Decelerate from maximum speed to zero for ( int i = 255 ; i >= 0 ; --i) { analogWrite (enA, i); analogWrite (enB, i); delay ( 20 );
+} // Now turn off motors digitalWrite (in1, LOW); digitalWrite (in2, LOW); digitalWrite (in3, LOW); digitalWrite (in4, LOW);
+}
+
+When you speed up or slow down a DC motor, you might hear a humming sound, especially at lower PWM values. Don’t worry—this is completely normal. It happens because DC motors need a certain minimum amount of voltage to start spinning, and at low PWM values, the voltage is not high enough to keep the motor operating smoothly.
+
+At the start of the sketch, we define which Arduino pins will be used to control Motor A and Motor B. For Motor A, we have a pin to enable it (allowing us to control its speed with PWM) and two pins for direction control. Similarly, for Motor B, we have an enable pin and two direction control pins.
+
+// Motor A connections int enA = 9 ; int in1 = 8 ; int in2 = 7 ; // Motor B connections int enB = 3 ; int in3 = 5 ; int in4 = 4 ;
+
+// Motor A connections int enA = 9 ; int in1 = 8 ; int in2 = 7 ; // Motor B connections int enB = 3 ; int in3 = 5 ; int in4 = 4 ;
+
+In the setup() function, we configure all six motor control pins as outputs, because we are sending signals from the Arduino to the L298N. We also make sure that both motors are turned off by setting all the direction control pins to LOW. This ensures the motors don’t suddenly start spinning when the Arduino powers on.
+
+void setup () { // Set all the motor control pins to outputs pinMode (enA, OUTPUT); pinMode (enB, OUTPUT); pinMode (in1, OUTPUT); pinMode (in2, OUTPUT); pinMode (in3, OUTPUT); pinMode (in4, OUTPUT); // Turn off motors - Initial state digitalWrite (in1, LOW); digitalWrite (in2, LOW); digitalWrite (in3, LOW); digitalWrite (in4, LOW);
+}
+
+void setup () { // Set all the motor control pins to outputs pinMode (enA, OUTPUT); pinMode (enB, OUTPUT); pinMode (in1, OUTPUT); pinMode (in2, OUTPUT); pinMode (in3, OUTPUT); pinMode (in4, OUTPUT); // Turn off motors - Initial state digitalWrite (in1, LOW); digitalWrite (in2, LOW); digitalWrite (in3, LOW); digitalWrite (in4, LOW);
+}
+
+In the loop() function, we call two custom functions with a delay of one second between them. The first function is directionControl() , and the second is speedControl() .
+
+void loop () { directionControl (); delay ( 1000 ); speedControl (); delay ( 1000 );
+}
+
+void loop () { directionControl (); delay ( 1000 ); speedControl (); delay ( 1000 );
+}
+
+Let’s break down what each of these functions does.
+
+The directionControl() function demonstrates how to control the direction of both motors. First, we set both motors to their maximum possible speed by setting both enable pins to HIGH. Then, we send the necessary signals to the direction control pins to make both Motor A and Motor B spin forward. After they spin in that direction for two seconds, we change the signals to their direction pins, which causes both motors to reverse their spinning direction for another two seconds. Finally, we stop the motors by setting all direction control pins to LOW.
+
+void directionControl () { // Set motors to maximum speed digitalWrite (enA, HIGH); digitalWrite (enB, HIGH); // Turn on motor A & B digitalWrite (in1, HIGH); digitalWrite (in2, LOW); digitalWrite (in3, HIGH); digitalWrite (in4, LOW); delay ( 2000 ); // Now change motor directions digitalWrite (in1, LOW); digitalWrite (in2, HIGH); digitalWrite (in3, LOW); digitalWrite (in4, HIGH); delay ( 2000 ); // Turn off motors digitalWrite (in1, LOW); digitalWrite (in2, LOW); digitalWrite (in3, LOW); digitalWrite (in4, LOW);
+}
+
+void directionControl () { // Set motors to maximum speed digitalWrite (enA, HIGH); digitalWrite (enB, HIGH); // Turn on motor A & B digitalWrite (in1, HIGH); digitalWrite (in2, LOW); digitalWrite (in3, HIGH); digitalWrite (in4, LOW); delay ( 2000 ); // Now change motor directions digitalWrite (in1, LOW); digitalWrite (in2, HIGH); digitalWrite (in3, LOW); digitalWrite (in4, HIGH); delay ( 2000 ); // Turn off motors digitalWrite (in1, LOW); digitalWrite (in2, LOW); digitalWrite (in3, LOW); digitalWrite (in4, LOW);
+}
+
+The speedControl() function demonstrates how to control the speed of the motors using PWM. We start by setting the direction control pins so that both motors spin in one direction. Then, we slowly increase the motor speed by gradually raising the PWM value from 0 to 255. This simulates an acceleration effect. Once the motors reach full speed, we reverse the process—slowly decreasing the PWM value from 255 back to 0, which causes the motors to gradually slow down and stop. Finally, we stop the motors by setting all direction control pins to LOW.
+
+void speedControl () { // Turn on motors digitalWrite (in1, LOW); digitalWrite (in2, HIGH); digitalWrite (in3, LOW); digitalWrite (in4, HIGH); // Accelerate from zero to maximum speed for ( int i = 0 ; i < 256 ; i++) { analogWrite (enA, i); analogWrite (enB, i); delay ( 20 );
+} // Decelerate from maximum speed to zero for ( int i = 255 ; i >= 0 ; --i) { analogWrite (enA, i); analogWrite (enB, i); delay ( 20 );
+} // Now turn off motors digitalWrite (in1, LOW); digitalWrite (in2, LOW); digitalWrite (in3, LOW); digitalWrite (in4, LOW);
+}
+
+void speedControl () { // Turn on motors digitalWrite (in1, LOW); digitalWrite (in2, HIGH); digitalWrite (in3, LOW); digitalWrite (in4, HIGH); // Accelerate from zero to maximum speed for ( int i = 0 ; i < 256 ; i++) { analogWrite (enA, i); analogWrite (enB, i); delay ( 20 );
+} // Decelerate from maximum speed to zero for ( int i = 255 ; i >= 0 ; --i) { analogWrite (enA, i); analogWrite (enB, i); delay ( 20 );
+} // Now turn off motors digitalWrite (in1, LOW); digitalWrite (in2, LOW); digitalWrite (in3, LOW); digitalWrite (in4, LOW);
+}

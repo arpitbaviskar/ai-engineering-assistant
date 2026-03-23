@@ -3,7 +3,7 @@ from ultralytics import YOLO
 
 # load once at import time (downloads yolov8n.pt on first run)
 yolo = YOLO("yolov8n.pt")
-
+yolo = YOLO(r"E:\ai_engineering_robotics_assistant_architecture\runs\detect\vision\runs\robotics_detector\weights\best.pt") 
 
 def preprocess(path: str):
     img = cv2.imread(path)

@@ -1,0 +1,282 @@
+TOPIC: Stepper Motor with L298N
+SOURCE: https://lastminuteengineers.com/stepper-motor-l298n-arduino-tutorial/
+
+CONTROL STEPPER MOTOR WITH L298N MOTOR DRIVER & ARDUINO
+
+If you’re getting into robotics, 3D printing, or building your own CNC machine, chances are you’ll come across stepper motors. These motors sit somewhere between regular DC motors and servo motors in terms of how they work. Like DC motors, they can spin continuously, but like servos, they can also move in precise, controlled steps. This makes them perfect for projects where you need precise control over movement, like positioning a 3D printer head or guiding a robotic arm.
+
+One of the easiest and most popular ways to control a stepper motor is by using the L298N motor driver module. It’s affordable, widely available, and can control both the speed and direction of small to medium-sized bipolar stepper motors, such as the NEMA 17 or NEMA 23.
+
+In this tutorial, we’ll walk you through everything you need to know to get started. You’ll learn how the L298N works, how to wire it up with a stepper motor and Arduino, and how to control it in two different ways: using Arduino’s built-in Stepper library for simple control, and the more advanced AccelStepper library for smoother and more flexible motion.
+
+Let’s get started and bring some motion to your next project!
+
+At the center of the module is a big, black chip with a chunky heat sink – the L298N.
+
+It is a high-voltage, high-current dual full-bridge driver primarily designed for driving inductive loads such as DC motors, stepper motors, relays, and solenoids.
+
+The chip works as a current amplifier, meaning it takes the low-current control signals from an Arduino and boosts them to the higher current and voltage levels that motors need to run.
+
+Inside the chip are two separate H-bridge circuits. An H-bridge is a special circuit made of four electronic switches arranged in the shape of an “H”. Each H-bridge controls one of the electromagnetic coils inside a stepper motor.
+
+When you turn these switches on and off in a specific pattern, you control which direction electricity flows through the coil. By sending current through (energizing) the coils in the correct sequence, you can make the motor’s shaft rotate either forward or backward.
+
+The animation below shows how H-bridges work together to drive a stepper motor.
+
+The L298N is pretty flexible when it comes to power. It can work with a wide range of voltages, from 5V up to 46V, and can supply up to 2A of continuous current per channel. This means it can handle everything from small stepper motors to larger, more powerful motors.
+
+Another helpful feature is its built-in thermal protection. If the chip gets too hot—maybe because a motor is drawing too much current or the heat sink isn’t cooling it well enough—the L298N will automatically shut down its outputs temporarily to prevent damage. Once the chip cools back down to a safe temperature, it automatically starts working again.
+
+TECHNICAL SPECIFICATIONS
+
+Here are the specifications:
+
+For more details, please refer below datasheet.
+
+L298N MOTOR DRIVER MODULE PINOUT
+
+The L298N module has 11 pins in total.
+
+Let’s go over each group of pins to understand what they do and how to use them properly.
+
+The L298N module has two main power input pins: VS and VSS.
+
+VS is the main power input for the motors. On many L298N modules, this pin is labeled as +12V, but it can actually accept a wide range of DC voltages, from 5V up to 46V. However, it’s important to know that the voltage your motors actually receive will be a bit lower than the voltage you give to the VS pin. This is because the internal H-bridge transistors inside the L298N cause a voltage drop of around 2V. More details about this voltage drop are explained later in this section .
+
+VSS is the power input for the internal logic circuitry of the chip. This logic circuitry needs a steady 5V supply to operate properly. You can supply this 5V in two different ways. One way is to connect an external 5V power supply directly to the VSS pin. The other way is to use the onboard 5V voltage regulator, which takes power from the motor supply (VS) and automatically converts it to provide 5V to the logic circuits. When you use the onboard regulator, you don’t need to connect anything to the VSS pin yourself. The details on how to use this regulator and when to connect VSS directly are explained later in this section .
+
+GND pin is the common ground connection for the module. Both the motor power supply and your Arduino must share a common ground through this pin.
+
+These pins are where you connect your stepper motor. OUT1 and OUT2 connect to one of the motor’s coils, while OUT3 and OUT4 connect to the motor’s other coil.
+
+The pins IN1 , IN2 , IN3 and IN4 are used to control the order in which the motor’s coils are energized. These pins actually drive the internal switches of the L298N’s H-bridge circuits, and by sending different patterns of signals to them, you control how the motor moves.
+
+The timing and order of these control signals determines the motor’s behavior:
+
+The sequence in which you send the signals determines the direction of rotation.
+
+The speed at which you send these signals determines how fast the motor spins.
+
+The total number of signals you send determines exactly how far the motor rotates.
+
+By carefully managing these control signals through your Arduino, you can move the stepper motor with very high accuracy and precision.
+
+ENA and ENB are the enable pins for the two H-bridges. Since each H-bridge controls one coil of the stepper motor, ENA belongs to one coil and ENB belongs to the other. When an enable pin is pulled HIGH, the corresponding H-bridge is turned on, and allows electricity to flow through its coil. When the enable pin is pulled LOW, the H-bridge is turned off and no current can flow through that coil. This allows you to enable or disable each coil independently.
+
+The L298N module usually comes with jumpers across the ENA and ENB pins. These jumpers connect the enable pins directly to 5V, which means the motor is always enabled and ready to run.
+
+VOLTAGE DROP OF L298N
+
+You might know that when electricity flows through electronic components like transistors, a small amount of voltage always gets lost along the way. The L298N uses bipolar junction transistors (BJTs) inside its H-Bridge circuits, and these types of transistors are known to have noticeable voltage drops when they’re carrying current.
+
+According to the datasheet, the voltage drop across the L298N can range from about 1.8V to 3.2V when the current is around 1 amp, and it can go as high as almost 5V when the current reaches 2 amps.
+
+So, as a general rule, you can assume a voltage drop of about 2V during typical use.
+
+This voltage drop directly affects the power your motors receive. For example, if you connect a 12V supply to the motor power input (VS), the motor will not actually get the full 12V. Instead, it will receive about 10V.
+
+For a stepper motor, this lower voltage reduces the current flowing through each coil, and since a stepper motor’s torque is almost directly proportional to the coil current, this means you’ll get lower torque from your motor.
+
+For example, suppose your stepper motor is rated for 12V with a coil resistance of 30Ω, which gives it a rated current of about 0.4A. If you supply 12V to the L298N, the motor actually receives only 10V (12V – 2V = 10V) after the voltage drop. The current flowing through the motor becomes I = 10V ÷ 30Ω = 0.33A. This is only around 83% of the motor’s rated current, which means you also get only around 83% of the possible torque.
+
+To make sure your stepper motor runs at its full rated power, you should provide a voltage to the L298N that’s about 2V higher than what your motor actually needs. For example, if you’re using a 5V motor, you’ll need to supply around 7V to the motor power terminal. Similarly, if you have a 12V motor, your motor power supply should be around 14V to help it run at its full potential.
+
+ON-BOARD 5V REGULATOR AND JUMPER
+
+The L298N motor driver module comes with a built-in 78M05 voltage regulator. The purpose of this regulator is to take power from the motor supply input (connected to the VS pin) and convert it into a steady 5V. This 5V is then used to power the internal logic circuitry of the L298N chip, which means you don’t need to connect a separate 5V power source to the VSS pin.
+
+There is a small jumper on the module that lets you enable or disable this regulator.
+
+When the jumper is in place, the 5V regulator is enabled. In this mode, the 5V regulator automatically powers the chip’s internal logic circuitry using the motor power input, and the VSS pin becomes a 5V output instead of an input. This output can provide up to 0.5 amps of current, which is often enough to power an Arduino or other small electronic components in your project.
+
+However, it’s important to note that the onboard 5V regulator is not designed to handle input voltages higher than 12V. So, you should only use this feature if your motor power supply is less than 12V. If your motor power supply is higher than 12V, you must remove the jumper to prevent damage to the onboard 5V regulator.
+
+Here’s a circuit diagram that will help you understand how power flows when the regulator jumper is in place.
+
+When the jumper is removed, the 5V regulator is disabled. In this case, the VSS pin becomes a required input instead of an output. That means you must provide 5V from an external power source to the VSS pin to power the internal logic circuitry of the chip.
+
+DO NOT supply power to both the VSS pin and the VS pin at the same time while the jumper is in place. This can cause serious damage to your module!
+
+IDENTIFYING THE PHASES OF A BIPOLAR STEPPER MOTOR
+
+Before you connect a bipolar stepper motor to the L298N module, you first need to find out which wires belong to the same phase. A bipolar stepper motor has two separate coils, and each coil, or phase, has two wires. There are two simple ways to identify these pairs.
+
+The first method is to turn the motor shaft by hand. At first, the shaft should spin fairly freely. Then, take any two motor wires and briefly touch them together. While those wires are still touching, try turning the shaft again. If the shaft suddenly becomes much harder to turn, you’ve found a phase! If the shaft still turns easily, try different combinations until you find a pair that creates resistance.
+
+Another method is to use a multimeter set to continuity mode. Touch the multimeter’s probes to two wires at a time. If the meter beeps or shows continuity, those two wires belong to the same phase. If it stays silent and shows no continuity, try a different pair of wires.
+
+Once you identify both phases, you can proceed with the wiring.
+
+WIRING A BIPOLAR STEPPER MOTOR TO THE L298N MODULE AND ARDUINO
+
+To begin wiring, start by connecting power for the motors. In this experiment, we’re using a NEMA 17 bipolar stepper motor, which is commonly used in 3D printers and CNC machines. These motors are typically rated for 12V. We will therefore connect an external 12V power source to the VS terminal on the module. Because the L298N causes a voltage drop of about 2V, the motors will actually only receive around 10V and will spin at a slightly lower torque than their full rated power. But that’s perfectly okay for many experiments and beginner projects.
+
+Next, we need to provide 5V power to the L298N’s internal logic circuitry. Instead of using a separate 5V power source for this, we’ll take advantage of the built-in 5V regulator already on the module. To do that, just leave the jumper for the 5V regulator in place.
+
+If you want your motors to receive the ideal full 12V they’re rated for, you’ll need to do things a bit differently. You’ll need to provide an external 14V power supply to the VS terminal. You’ll also need to provide a separate external 5V to the VSS terminal to power the internal logic circuitry of the chip; this 5V can come from your Arduino’s 5V output pin. And don’t forget to remove the regulator enable jumper from the module.
+
+After supplying power, connect the control pins IN1, IN2, IN3, and IN4 on the L298N module to digital output pins 8, 9, 10, and 11 on the Arduino.
+
+To keep the motor always enabled and ready to run, we’ll keep both the ENA and ENB jumpers in place.
+
+Finally, connect the stepper motor wires to the output terminals on the L298N module. Since you already identified the two phases earlier, connect one pair of wires to OUT1 and OUT2, and connect the other pair to OUT3 and OUT4. Don’t worry about which wire goes to which terminal within each pair; the order doesn’t matter.
+
+Here’s a quick reference table for the pin connections:
+
+The image below shows the complete wiring diagram for this setup.
+
+ARDUINO EXAMPLE CODE 1 – USING THE BUILT-IN STEPPER LIBRARY
+
+In this example, we’re going to use the Stepper Library that comes with the Arduino IDE. This library takes care of all the complicated stepping sequences for you, making it much easier to control both unipolar and bipolar stepper motors.
+
+Here is a simple sketch that will make the motor rotate slowly in one direction, then quickly in the opposite direction.
+
+// Include the Arduino Stepper Library #include <Stepper.h> // Define the number of steps per rotation const int stepsPerRevolution = 200 ; // Create Instance of Stepper library Stepper myStepper (stepsPerRevolution, 8 , 9 , 10 , 11 ); void setup () { // Nothing to do (Stepper Library sets pins as outputs) } void loop () { // Rotate CW slowly at 50 RPM myStepper. setSpeed ( 50 );
+myStepper. step (stepsPerRevolution); delay ( 1000 ); // Rotate CCW quickly at 100 RPM myStepper. setSpeed ( 100 );
+myStepper. step (-stepsPerRevolution); delay ( 1000 );
+}
+
+// Include the Arduino Stepper Library #include <Stepper.h> // Define the number of steps per rotation const int stepsPerRevolution = 200 ; // Create Instance of Stepper library Stepper myStepper (stepsPerRevolution, 8 , 9 , 10 , 11 ); void setup () { // Nothing to do (Stepper Library sets pins as outputs) } void loop () { // Rotate CW slowly at 50 RPM myStepper. setSpeed ( 50 );
+myStepper. step (stepsPerRevolution); delay ( 1000 ); // Rotate CCW quickly at 100 RPM myStepper. setSpeed ( 100 );
+myStepper. step (-stepsPerRevolution); delay ( 1000 );
+}
+
+Let’s break down how this program works.
+
+The sketch begins by including the Stepper library. This library gives us access to functions that help control stepper motors.
+
+#include <Stepper.h>
+
+#include <Stepper.h>
+
+Next, we tell the Arduino how many steps our motor needs to make one complete rotation, which in this case is 200 steps.
+
+const int stepsPerRevolution = 200 ;
+
+const int stepsPerRevolution = 200 ;
+
+After that, we create an object from the Stepper class. We give this object two pieces of information: the number of steps per revolution and which Arduino pins connect to the motor driver board.
+
+Stepper myStepper (stepsPerRevolution, 8 , 9 , 10 , 11 );
+
+Stepper myStepper (stepsPerRevolution, 8 , 9 , 10 , 11 );
+
+The setup() function is empty in our program. Usually, this function is where we prepare pins for use, but the Stepper Library automatically sets up the pins for us, so we don’t need to add anything here.
+
+void setup () { // Nothing to do }
+
+void setup () { // Nothing to do }
+
+In the loop() function, we first set the motor’s speed using setSpeed() . Then, we use the step() function to tell the motor how many steps to move. If the number passed to step() is positive, the motor spins clockwise. If it’s negative, the motor spins counter-clockwise.
+
+So in our program, the motor first rotates slowly clockwise at 50 RPM for 200 steps (one full rotation). Then it waits for one second. After that, it spins faster in the opposite direction at 100 RPM for another 200 steps. This whole process repeats endlessly.
+
+void loop () { // Rotate CW slowly at 50 RPM myStepper. setSpeed ( 50 );
+myStepper. step (stepsPerRevolution); delay ( 1000 ); // Rotate CCW quickly at 100 RPM myStepper. setSpeed ( 100 );
+myStepper. step (-stepsPerRevolution); delay ( 1000 );
+}
+
+void loop () { // Rotate CW slowly at 50 RPM myStepper. setSpeed ( 50 );
+myStepper. step (stepsPerRevolution); delay ( 1000 ); // Rotate CCW quickly at 100 RPM myStepper. setSpeed ( 100 );
+myStepper. step (-stepsPerRevolution); delay ( 1000 );
+}
+
+One important thing to understand is that the step() function is blocking. That means when you tell the motor to take steps, the Arduino stops and waits until all those steps are finished before moving on to the next instruction. For example, if you set the speed to 1 RPM and tell the motor to make one full rotation (200 steps), the Arduino will pause for a whole minute before moving on to the next line of code.
+
+ARDUINO EXAMPLE CODE 2 – USING THE ACCELSTEPPER LIBRARY
+
+The built-in Arduino Stepper library works fine for simple projects with a single motor. However, if you need to control multiple stepper motors simultaneously, or if you want smoother movement with acceleration and deceleration, you’ll need something more advanced.
+
+That’s where the AccelStepper library comes in! This powerful library is specifically designed for more sophisticated stepper motor control. Unlike the basic Stepper library, AccelStepper can:
+
+Control multiple steppers at once, with independent concurrent stepping on each stepper.
+
+Support acceleration and deceleration.
+
+Support half-stepping for smoother and more precise movements
+
+Since this library doesn’t come pre-installed with Arduino IDE, you’ll need to install it before using it.
+
+LIBRARY INSTALLATION
+
+To install the library,
+
+First open your Arduino IDE program. Then click on the Library Manager icon on the left sidebar.
+
+Type “ accelstepper ” in the search box to filter your results.
+
+Look for the AccelStepper library by Mike McCauley .
+
+Click the Install button to add it to your Arduino IDE.
+
+Here is a simple sketch that makes the motor accelerate in one direction and then decelerate until it stops completely. After completing one full rotation, the motor will reverse direction and repeat the process.
+
+// Include the AccelStepper Library #include <AccelStepper.h> // Define step constant #define MotorInterfaceType 4 // Creates an instance AccelStepper myStepper (MotorInterfaceType, 8 , 9 , 10 , 11 ); void setup () { // set the maximum speed, acceleration factor, // initial speed and the target position myStepper. setMaxSpeed ( 1000.0 );
+myStepper. setAcceleration ( 50.0 );
+myStepper. setSpeed ( 200 );
+myStepper. moveTo ( 200 );
+} void loop () { // Change direction once the motor reaches target position if (myStepper. distanceToGo () == 0 )
+myStepper. moveTo (-myStepper. currentPosition ()); // Move the motor one step myStepper. run ();
+}
+
+// Include the AccelStepper Library #include <AccelStepper.h> // Define step constant #define MotorInterfaceType 4 // Creates an instance AccelStepper myStepper (MotorInterfaceType, 8 , 9 , 10 , 11 ); void setup () { // set the maximum speed, acceleration factor, // initial speed and the target position myStepper. setMaxSpeed ( 1000.0 );
+myStepper. setAcceleration ( 50.0 );
+myStepper. setSpeed ( 200 );
+myStepper. moveTo ( 200 );
+} void loop () { // Change direction once the motor reaches target position if (myStepper. distanceToGo () == 0 )
+myStepper. moveTo (-myStepper. currentPosition ()); // Move the motor one step myStepper. run ();
+}
+
+The sketch begins by including the newly installed AccelStepper library.
+
+#include <AccelStepper.h>
+
+#include <AccelStepper.h>
+
+We then define the motor interface type. Since we are using a 4-wire stepper motor in full-step mode, we set this constant to 4. If you wanted smoother motion, you could use half-step mode by changing this value to 8.
+
+#define MotorInterfaceType 4
+
+#define MotorInterfaceType 4
+
+Next, we create an object from the AccelStepper class. When setting this up, we provide two pieces of information: the motor interface type we just defined and the Arduino pins connected to the motor driver board.
+
+AccelStepper myStepper (MotorInterfaceType, 8 , 9 , 10 , 11 );
+
+AccelStepper myStepper (MotorInterfaceType, 8 , 9 , 10 , 11 );
+
+In the setup() function, we configure several important settings:
+
+setMaxSpeed() sets the fastest speed the motor is allowed to reach
+
+setAcceleration() controls how quickly the motor speeds up or slows down—this helps create smooth motion instead of sudden jerks
+
+setSpeed() sets the initial speed
+
+moveTo() tells the motor its first target position, which in this case is 200 steps (one full revolution for the NEMA 17)
+
+void setup () {
+myStepper. setMaxSpeed ( 1000.0 );
+myStepper. setAcceleration ( 50.0 );
+myStepper. setSpeed ( 200 );
+myStepper. moveTo ( 200 );
+}
+
+void setup () {
+myStepper. setMaxSpeed ( 1000.0 );
+myStepper. setAcceleration ( 50.0 );
+myStepper. setSpeed ( 200 );
+myStepper. moveTo ( 200 );
+}
+
+Now, in the loop() function, we check whether the motor has reached its target position using distanceToGo() . When this value becomes zero, it means the motor has arrived at its destination. At that point, we reverse the motor’s direction by setting a new target that’s the opposite of its current position. This makes the motor go back and forth endlessly, switching directions after each full turn.
+
+At the end of the loop, we call the run() function. This is extremely important! Unlike the basic Stepper library where the motor moves immediately when you call step() , the AccelStepper library works differently. You must call run() repeatedly to make the motor actually move. If you forget this step, your motor won’t do anything at all, even if you’ve set a speed and target.
+
+void loop () { // Change direction once the motor reaches target position if (myStepper. distanceToGo () == 0 )
+myStepper. moveTo (-myStepper. currentPosition ()); // Move the motor one step myStepper. run ();
+}
+
+void loop () { // Change direction once the motor reaches target position if (myStepper. distanceToGo () == 0 )
+myStepper. moveTo (-myStepper. currentPosition ()); // Move the motor one step myStepper. run ();
+}

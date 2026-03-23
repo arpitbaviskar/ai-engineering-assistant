@@ -1,0 +1,182 @@
+TOPIC: ESP32 GPIO Pinout Reference
+SOURCE: https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
+
+The ESP32 chip comes with 48 pins with multiple functions. Not all pins are exposed in all ESP32 development boards, and some pins cannot be used.
+
+There are many questions on how to use the ESP32 GPIOs. What pins should you use? What pins should you avoid using in your projects? This post aims to be a simple and easy-to-follow reference guide for the ESP32 GPIOs.
+
+The figure below illustrates the ESP-WROOM-32 pinout. You can use it as a reference if you’re using an ESP32 bare chip to build a custom board:
+
+Note: not all GPIOs are accessible in all development boards, but each specific GPIO works in the same way regardless of the development board you’re using. If you’re just getting started with the ESP32, we recommend reading our guide: Getting Started with the ESP32 Development Board .
+
+The ESP32 peripherals include:
+
+18 Analog-to-Digital Converter (ADC) channels
+
+16 PWM output channels
+
+2 Digital-to-Analog Converters (DAC)
+
+10 Capacitive sensing GPIOs
+
+The ADC (analog to digital converter) and DAC (digital to analog converter) features are assigned to specific static pins. However, you can decide which pins are UART, I2C, SPI, PWM, etc – you just need to assign them in the code. This is possible due to the ESP32 chip’s multiplexing feature.
+
+Although you can define the pins properties on the software, there are pins assigned by default as shown in the following figure (this is an example for the ESP32 DEVKIT V1 DOIT board with 36 pins – the pin location can change depending on the manufacturer).
+
+Additionally, there are pins with specific features that make them suitable or not for a particular project. The following table shows what pins are best to use as inputs, outputs and which ones you need to be cautious.
+
+The pins highlighted in green are OK to use. The ones highlighted in yellow are OK to use, but you need to pay attention because they may have an unexpected behavior mainly at boot. The pins highlighted in red are not recommended to use as inputs or outputs.
+
+Continue reading for a more detail and in-depth analysis of the ESP32 GPIOs and its functions.
+
+GPIOs 34 to 39 are GPIs – input only pins. These pins don’t have internal pull-up or pull-down resistors. They can’t be used as outputs, so use these pins only as inputs:
+
+SPI FLASH INTEGRATED ON THE ESP-WROOM-32
+
+GPIO 6 to GPIO 11 are exposed in some ESP32 development boards. However, these pins are connected to the integrated SPI flash on the ESP-WROOM-32 chip and are not recommended for other uses. So, don’t use these pins in your projects:
+
+CAPACITIVE TOUCH GPIOS
+
+The ESP32 has 10 internal capacitive touch sensors. These can sense variations in anything that holds an electrical charge, like the human skin. So they can detect variations induced when touching the GPIOs with a finger. These pins can be easily integrated into capacitive pads and replace mechanical buttons. The capacitive touch pins can also be used to wake up the ESP32 from deep sleep .
+
+Those internal touch sensors are connected to these GPIOs:
+
+Learn how to use the touch pins with Arduino IDE: ESP32 Touch Pins with Arduino IDE
+
+ANALOG TO DIGITAL CONVERTER (ADC)
+
+The ESP32 has 18 x 12 bits ADC input channels (while the ESP8266 only has 1x 10 bits ADC ). These are the GPIOs that can be used as ADC and respective channels:
+
+Learn how to use the ESP32 ADC pins:
+
+ESP32 ADC Pins with Arduino IDE
+
+ESP32 ADC Pins with MicroPython
+
+Note: ADC2 pins cannot be used when Wi-Fi is used. So, if you’re using Wi-Fi and you’re having trouble getting the value from an ADC2 GPIO, you may consider using an ADC1 GPIO instead. That should solve your problem.
+
+The ADC input channels have a 12-bit resolution. This means that you can get analog readings ranging from 0 to 4095, in which 0 corresponds to 0V and 4095 to 3.3V. You can also set the resolution of your channels on the code and the ADC range.
+
+The ESP32 ADC pins don’t have a linear behavior. You’ll probably won’t be able to distinguish between 0 and 0.1V, or between 3.2 and 3.3V. You need to keep that in mind when using the ADC pins. You’ll get a behavior similar to the one shown in the following figure.
+
+DIGITAL TO ANALOG CONVERTER (DAC)
+
+There are 2 x 8 bits DAC channels on the ESP32 to convert digital signals into analog voltage signal outputs. These are the DAC channels:
+
+There is RTC GPIO support on the ESP32. The GPIOs routed to the RTC low-power subsystem can be used when the ESP32 is in deep sleep. These RTC GPIOs can be used to wake up the ESP32 from deep sleep when the Ultra Low Power (ULP) co-processor is running. The following GPIOs can be used as an external wake up source .
+
+Learn how to use the RTC GPIOs to wake up the ESP32 from deep sleep: ESP32 Deep Sleep with Arduino IDE and Wake Up Sources
+
+The ESP32 LED PWM controller has 16 independent channels that can be configured to generate PWM signals with different properties. All pins that can act as outputs can be used as PWM pins (GPIOs 34 to 39 can’t generate PWM).
+
+To set a PWM signal, you need to define these parameters in the code:
+
+GPIO where you want to output the signal.
+
+Learn how to use ESP32 PWM with Arduino IDE: ESP32 PWM with Arduino IDE
+
+The ESP32 has two I2C channels and any pin can be set as SDA or SCL. When using the ESP32 with the Arduino IDE, the default I2C pins are:
+
+If you want to use other pins when using the wire library, you just need to call:
+
+Wire.begin(SDA, SCL);
+
+Wire.begin(SDA, SCL);
+
+Learn more about I2C communication protocol with the ESP32 using Arduino IDE: ESP32 I2C Communication (Set Pins, Multiple Bus Interfaces and Peripherals)
+
+More I2C Tutorials with the ESP32:
+
+ESP32 I2C Master and Slave (I2C Communication Between Two ESP32) – Arduino IDE
+
+ESP32: I2C Scanner (Arduino IDE) – Finding the Address of I2C Devices
+
+Guide for TCA9548A I2C Multiplexer with the ESP32
+
+By default, the pin mapping for SPI is:
+
+Learn more about SPI communication protocol with the ESP32 using Arduino IDE: ESP32 SPI Communication: Set Pins, Multiple SPI Bus Interfaces, and Peripherals (Arduino IDE)
+
+The ESP32 supports up to three UART interfaces: UART0 , UART1 , and UART2 , depending on the ESP32 board model you’re using.
+
+UART0 is usually reserved for communication with the serial monitor during upload and debugging. However, you can also use it for communication with other devices after uploading the code if the Serial Monitor is not needed.
+
+UART1 and UART2 : available to communicate with external devices.
+
+Like I2C and SPI, these UART pins can be mapped to any GPIO pin on the ESP32. However, they have a default pin assignment on most board models.
+
+For most ESP32 boards the UART pin assignment is as follows:
+
+About UART1 (GPIO 9 and GPIO10) – these GPIOs are connected to the ESP32 SPI flash memory, so you can’t use them like that. To use UART1 to communicate with other devices, you must define different pins using the HardwareSerial library.
+
+Learn more about UART with the ESP32 : ESP32 UART Communication (Serial): Set Pins, Interfaces, Send and Receive Data (Arduino IDE)
+
+If you’re using an ESP32-S3 , the assignment is completely different. Check out the ESP32-S3 pinout here .
+
+All GPIOs can be configured as interrupts.
+
+Learn how to use interrupts with the ESP32:
+
+ESP32 interrupts with Arduino IDE
+
+ESP32 interrupts with MicroPython
+
+The ESP32 chip has the following strapping pins:
+
+GPIO 0 (must be LOW to enter boot mode)
+
+GPIO 2 (must be floating or LOW during boot)
+
+GPIO 5 (must be HIGH during boot)
+
+GPIO 12 (must be LOW during boot)
+
+GPIO 15 (must be HIGH during boot)
+
+These are used to put the ESP32 into bootloader or flashing mode. On most development boards with built-in USB/Serial, you don’t need to worry about the state of these pins. The board puts the pins in the right state for flashing or boot mode. More information on the ESP32 Boot Mode Selection can be found here .
+
+However, if you have peripherals connected to those pins, you may have trouble trying to upload new code, flashing the ESP32 with new firmware, or resetting the board. If you have some peripherals connected to the strapping pins and you are getting trouble uploading code or flashing the ESP32, it may be because those peripherals are preventing the ESP32 from entering the right mode. Read the Boot Mode Selection documentation to guide you in the right direction. After resetting, flashing, or booting, those pins work as expected.
+
+Some GPIOs change their state to HIGH or output PWM signals at boot or reset. This means that if you have outputs connected to these GPIOs you may get unexpected results when the ESP32 resets or boots.
+
+GPIO 6 to GPIO 11 (connected to the ESP32 integrated SPI flash memory – not recommended to use).
+
+Enable (EN) is the 3.3V regulator’s enable pin. It’s pulled up, so connect to ground to disable the 3.3V regulator. This means that you can use this pin connected to a pushbutton to restart your ESP32, for example.
+
+The absolute maximum current drawn per GPIO is 40mA according to the “Recommended Operating Conditions” section in the ESP32 datasheet.
+
+ESP32 BUILT-IN HALL EFFECT SENSOR
+
+The ESP32 also features a built-in hall effect sensor that detects changes in the magnetic field in its surroundings.
+
+We hope you’ve found this reference guide for the ESP32 GPIOs useful. If you have more tips about the ESP32 GPIOs, please share by writing a comment down below.
+
+If you’re just getting started with the ESP32, we have some great content to get started:
+
+Learn ESP32 with Arduino IDE
+
+Getting Started with the ESP32 Development Board
+
+20+ ESP32 Projects and Tutorials
+
+ESP32 Web Server Tutorial
+
+ESP32 vs ESP8266 – Pros and Cons
+
+SMART HOME WITH RASPBERRY PI, ESP32, ESP8266 [EBOOK]
+
+RECOMMENDED RESOURCES
+
+Build a Home Automation System from Scratch » With Raspberry Pi, ESP8266, Arduino, and Node-RED.
+
+Home Automation using ESP8266 eBook and video course » Build IoT and home automation projects.
+
+Arduino Step-by-Step Projects » Build 25 Arduino projects with our course, even with no prior experience!
+
+ESP32 EXTERNAL WAKE UP FROM DEEP SLEEP
+
+GETTING DATE AND TIME WITH ESP32 ON ARDUINO IDE (NTP CLIENT)
+
+ESP8266 DHT11/DHT22 TEMPERATURE AND HUMIDITY WEB SERVER WITH ARDUINO IDE
+
+ENJOYED THIS PROJECT? STAY UPDATED BY SUBSCRIBING OUR NEWSLETTER!

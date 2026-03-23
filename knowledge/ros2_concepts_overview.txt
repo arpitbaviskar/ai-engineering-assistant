@@ -1,0 +1,14 @@
+TOPIC: ROS2 Basic Concepts
+SOURCE: https://docs.ros.org/en/humble/Concepts/Basic.html
+
+You're reading the documentation for an older, but still supported, version of ROS 2.
+For information on the latest version, please have a look at Kilted .
+
+ROS 2 is a middleware based on a strongly-typed, anonymous publish/subscribe mechanism that allows for message passing between different processes.
+
+At the heart of any ROS 2 system is the ROS graph.
+The ROS graph refers to the network of nodes in a ROS system and the connections between them by which they communicate.
+
+These are the concepts that will help you get started understanding the basics of ROS 2.
+
+Introspection with command line tools

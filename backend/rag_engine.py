@@ -23,7 +23,7 @@ def retrieve(question: str, n: int = 3):
     )
     docs   = res["documents"][0]
     dists  = res["distances"][0]
-    sources = [m.get("source", "unknown") for m in res["metadatas"][0]]
+    sources = [m.get("source", "unknown") if m is not None else "unknown" for m in res["metadatas"][0]]
     return docs, dists[0], sources
 
 

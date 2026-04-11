@@ -1,0 +1,9 @@
+Servo jitter occurs when the PWM signal becomes unstable.
+
+Possible causes:
+- insufficient power supply
+- noisy PWM signal
+- incorrect grounding
+
+Solution:
+Power servos using a separate 5V power supply instead of the Arduino 5V pin.
